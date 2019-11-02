@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  selenium-hub:
+    image: selenium/hub:3.141.59-xenon
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    volumes:
+      - /dev/shm:/dev/shm
+  chrome:
+    image: selenium/node-chrome-debug:3.141.59-xenon
+    ports:
+      - "5800:5900"
+    volumes:
+      - /dev/shm:/dev/shm
+    depends_on:
+      - selenium-hub
+    environment:
+      - HUB_HOST=selenium-hub
+      - HUB_PORT=4444
+  tests:
+    image: maven:3.6.1-jdk-8-alpine
+    volumes:
+      - ./:/tests
+    command: mvn clean test -f /tests/pom.xml -Dbrowser=remotechrome -DhubUrl=http://selenium-hub:4444/wd/hub
+
